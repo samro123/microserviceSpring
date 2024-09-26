@@ -20,7 +20,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EmailService {
     EmailClient emailClient;
-
+    String apiKey="";
 
     public EmailResponse sendEmail(SendEmailRequest request){
         EmailRequest emailRequest = EmailRequest.builder()
@@ -33,7 +33,7 @@ public class EmailService {
                 .htmlContent(request.getHtmlContent())
                 .build();
         try {
-            return emailClient.sendEmail("",emailRequest);
+            return emailClient.sendEmail(apiKey,emailRequest);
         }catch (FeignException e){
             throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
         }

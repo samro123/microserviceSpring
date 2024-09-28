@@ -6,6 +6,7 @@ import java.util.List;
 import com.devteria.identity.mapper.ProfileMapper;
 import com.devteria.identity.repository.httpclient.ProfileClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,8 +39,8 @@ public class UserService {
     UserMapper userMapper;
     ProfileMapper profileMapper;
     ProfileClient profileClient;
-
     PasswordEncoder passwordEncoder;
+    KafkaTemplate<String, String> kafkaTemplate;
 
 
 
@@ -58,6 +59,8 @@ public class UserService {
         profileRequest.setUserId(user.getId());
         profileClient.createProfile(profileRequest);
 
+        //Public message to kafka
+        kafkaTemplate.send("onboard-successful","Welcome our new member" + user.getUsername());
 
         return userMapper.toUserResponse(user);
     }

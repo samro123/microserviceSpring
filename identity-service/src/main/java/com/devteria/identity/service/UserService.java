@@ -77,7 +77,7 @@ public class UserService {
         kafkaTemplate.send("notification-delivery", notificationEvent);
 
         var userCreationReponse = userMapper.toUserResponse(user);
-        //userCreationReponse.setId(profile.getResult().getId());
+        userCreationReponse.setId(profile.getResult().getId());
 
         return userCreationReponse;
     }

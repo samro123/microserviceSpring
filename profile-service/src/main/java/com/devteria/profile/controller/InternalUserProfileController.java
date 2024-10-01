@@ -1,5 +1,6 @@
 package com.devteria.profile.controller;
 
+import com.devteria.profile.dto.ApiResponse;
 import com.devteria.profile.dto.request.UserProfileCreationRequest;
 import com.devteria.profile.dto.response.UserProfileResponse;
 import com.devteria.profile.service.UserProfileService;
@@ -14,7 +15,16 @@ import org.springframework.web.bind.annotation.*;
 public class InternalUserProfileController {
     UserProfileService userProfileService;
     @PostMapping("/internal/users")
-    UserProfileResponse createProfile(@RequestBody UserProfileCreationRequest request){
-        return userProfileService.createProfile(request);
+    ApiResponse<UserProfileResponse> createProfile(@RequestBody UserProfileCreationRequest request){
+        return ApiResponse.<UserProfileResponse>builder()
+                .result(userProfileService.createProfile(request))
+                .build();
+    }
+
+    @GetMapping("internal/users/{userId}")
+    ApiResponse<UserProfileResponse> getProfile(@PathVariable String userId){
+        return ApiResponse.<UserProfileResponse>builder()
+                .result(userProfileService.getByUserId(userId))
+                .build();
     }
 }

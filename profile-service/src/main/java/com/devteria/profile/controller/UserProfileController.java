@@ -35,4 +35,5 @@ public class UserProfileController {
                 .result(userProfileService.getMyProfile())
                 .build();
     }
+
 }

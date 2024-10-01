@@ -3,9 +3,11 @@ package com.devteria.identity.service;
 import java.util.HashSet;
 import java.util.List;
 
+import com.devteria.event.dto.NotificationEvent;
 import com.devteria.identity.mapper.ProfileMapper;
 import com.devteria.identity.repository.httpclient.ProfileClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,31 +40,46 @@ public class UserService {
     RoleRepository roleRepository;
     UserMapper userMapper;
     ProfileMapper profileMapper;
-    ProfileClient profileClient;
     PasswordEncoder passwordEncoder;
-    KafkaTemplate<String, String> kafkaTemplate;
-
-
+    ProfileClient profileClient;
+    KafkaTemplate<String, Object> kafkaTemplate;
 
     public UserResponse createUser(UserCreationRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
-
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
         HashSet<Role> roles = new HashSet<>();
+
         roleRepository.findById(PredefinedRole.USER_ROLE).ifPresent(roles::add);
 
         user.setRoles(roles);
-        user = userRepository.save(user);
+        user.setEmailVerified(false);
+
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException exception){
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
         var profileRequest = profileMapper.toProfileCreationRequest(request);
         profileRequest.setUserId(user.getId());
-        profileClient.createProfile(profileRequest);
 
-        //Public message to kafka
-        kafkaTemplate.send("onboard-successful","Welcome our new member" + user.getUsername());
+        NotificationEvent notificationEvent = NotificationEvent.builder()
+                .channel("EMAIL")
+                .recipient(request.getEmail())
+                .subject("Welcome to video")
+                .body("Hello, "+ request.getUsername())
+                .build();
 
-        return userMapper.toUserResponse(user);
+        var profile = profileClient.createProfile(profileRequest);
+        //log.info("Profile: {}", profile.getResult().getId());
+
+        // Publish message to kafka
+        kafkaTemplate.send("notification-delivery", notificationEvent);
+
+        var userCreationReponse = userMapper.toUserResponse(user);
+        //userCreationReponse.setId(profile.getResult().getId());
+
+        return userCreationReponse;
     }
 
     public UserResponse getMyInfo() {

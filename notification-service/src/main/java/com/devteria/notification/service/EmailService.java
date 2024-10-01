@@ -11,6 +11,8 @@ import feign.FeignException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +22,10 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EmailService {
     EmailClient emailClient;
-    String apiKey="";
+    @Value("${notification.email.brevo-apikey}")
+    @NonFinal
+    String apiKey;
+
 
     public EmailResponse sendEmail(SendEmailRequest request){
         EmailRequest emailRequest = EmailRequest.builder()

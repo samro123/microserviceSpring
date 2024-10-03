@@ -1,0 +1,10 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /movie
+spring:
+  application:
+    name: movie-service
+  data:
+    mongodb:
+      uri: mongodb://root:01022002@localhost:27017/movie-service?authSource=admin

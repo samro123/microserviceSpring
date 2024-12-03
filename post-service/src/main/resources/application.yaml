@@ -13,4 +13,8 @@ app:
   services:
     profile:
       url: http://localhost:8081/profile
+    movie:
+      url: http://localhost:8085/movie
+
+
 

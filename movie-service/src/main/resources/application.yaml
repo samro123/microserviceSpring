@@ -2,9 +2,19 @@ server:
   port: 8085
   servlet:
     context-path: /movie
+  tomcat:
+    max-http-form-post-size: 200MB
 spring:
   application:
     name: movie-service
   data:
     mongodb:
       uri: mongodb://root:01022002@localhost:27017/movie-service?authSource=admin
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+app:
+  services:
+    movie-ai:
+      url: http://localhost:8089
